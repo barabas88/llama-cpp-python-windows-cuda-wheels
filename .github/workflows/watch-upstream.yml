@@ -1,0 +1,41 @@
+# .github/workflows/watch-upstream.yml
+name: Watch upstream llama.cpp
+
+on:
+  schedule: [{ cron: '0 6 * * *' }]   # every day at 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { token: ${{ secrets.GITHUB_TOKEN }}, submodules: 'true' }
+
+      - name: Find newest upstream tag
+        id: newest
+        run: |
+          git -C vendor/llama.cpp fetch --tags --quiet
+          latest=$(git -C vendor/llama.cpp tag --list 'b57*' --sort=-creatordate | head -n1)
+          echo "latest=$latest" >> $GITHUB_OUTPUT
+
+      - name: Exit if already up-to-date
+        run: |
+          current=$(git -C vendor/llama.cpp describe --tags)
+          if [ "$current" = "${{ steps.newest.outputs.latest }}" ]; then
+            echo "::notice::Already at $current"
+            exit 0
+          fi
+
+      - name: Bump submodule
+        run: |
+          git -C vendor/llama.cpp checkout ${{ steps.newest.outputs.latest }}
+          git add vendor/llama.cpp
+          git commit -m "Bump llama.cpp to ${{ steps.newest.outputs.latest }}"
+
+      - name: Open PR
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: "⬆️ Update llama.cpp to ${{ steps.newest.outputs.latest }}"
+          commit-message: "Bump llama.cpp to ${{ steps.newest.outputs.latest }}"
+          branch: bump-llama-${{ steps.newest.outputs.latest }}

@@ -1,0 +1,5 @@
+
+```ini
+# ⇢ Single source of truth for the tag
+LLAMA_TAG=b5709
+CUDA_ARCHES="75;86;89"
