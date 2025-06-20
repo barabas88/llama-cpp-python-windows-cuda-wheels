@@ -1,52 +1,46 @@
-name: Build CUDA wheel
+name: Build-wheel
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
+  push:            { branches: [ "main" ] }
+  pull_request:    {}
   workflow_dispatch:
 
 jobs:
   wheel:
-    runs-on: windows-2022      # CUDA action supports 2022
+    runs-on: windows-2022   # Windows-latest is fine too
 
     steps:
-    #-- 0. checkout – we’ll init submodules ourselves
+    # ---- clone code + submodules in one go -------------------------------
     - uses: actions/checkout@v4
       with:
-        submodules: false
+        # grab the sub-module straight away (recursive = vendor/llama.cpp/…)
+        submodules: recursive
         fetch-depth: 0
 
-    #-- 1. make submodule folder real
-    - name: Init git submodules
-      run: git submodule update --init --recursive --depth 1
-
-    #-- 2. MSVC build environment (x64 host/target)
-    - name: Enable MSVC build environment
+    # ---- MSVC build tools -------------------------------------------------
+    - name: Enable MSVC env
       uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
+      with: { arch: x64 }
 
-    #-- 3. CUDA toolkit (headers + nvcc only)
-    - name: Install CUDA 12.4 tool-kit
+    # ---- minimal CUDA toolkit (headers + nvcc) ---------------------------
+    # 12.4.1 = latest GA build the action knows about
+    - name: Install CUDA 12.4
       uses: Jimver/cuda-toolkit@v0.2.16
-      with:
-        cuda: '12.4.1'
+      with: { cuda: '12.4.1' }
 
-    #-- 4. build the wheel inside build-wheel.ps1
+    # ---- build the wheel --------------------------------------------------
     - name: Build wheel
       shell: pwsh
-      run: ./build-wheel.ps1
+      run: |
+        ./build-wheel.ps1
 
-    #-- 5. keep artefact
+    # ---- publish ----------------------------------------------------------
     - uses: actions/upload-artifact@v4
       with:
         name: wheel
         path: dist/*.whl
 
-    #-- 6. when you push a tag, attach the wheel to a GH release
-    - name: (tag push) Publish release asset
+    - name: Attach to tagged release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v2
-      with:
-        files: dist/*.whl
+      with: { files: dist/*.whl }
