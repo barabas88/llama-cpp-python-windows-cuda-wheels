@@ -1,31 +1,52 @@
 name: Build CUDA wheel
 
 on:
-  push: { branches: ["main"] }
+  push:
+    branches: [ "main" ]
   pull_request:
   workflow_dispatch:
 
 jobs:
   wheel:
-    runs-on: windows-2022
+    runs-on: windows-2022      # CUDA action supports 2022
+
     steps:
-      - uses: actions/checkout@v4
-        with: { submodules: 'true', fetch-depth: 0 }
+    #-- 0. checkout – we’ll init submodules ourselves
+    - uses: actions/checkout@v4
+      with:
+        submodules: false
+        fetch-depth: 0
 
-      - name: Enable MSVC build environment
-        uses: ilammy/msvc-dev-cmd@v1
+    #-- 1. make submodule folder real
+    - name: Init git submodules
+      run: git submodule update --init --recursive --depth 1
 
-      - name: Build
-        shell: pwsh
-        run: ./build-wheel.ps1
+    #-- 2. MSVC build environment (x64 host/target)
+    - name: Enable MSVC build environment
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: wheel
-          path: dist/*.whl
+    #-- 3. CUDA toolkit (headers + nvcc only)
+    - name: Install CUDA 12.8 tool-kit
+      uses: Jimver/cuda-toolkit@v0.2.16
+      with:
+        cuda: '12.8.0'
 
-      - name: (tag push) Publish release asset
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/*.whl
+    #-- 4. build the wheel inside build-wheel.ps1
+    - name: Build wheel
+      shell: pwsh
+      run: ./build-wheel.ps1
+
+    #-- 5. keep artefact
+    - uses: actions/upload-artifact@v4
+      with:
+        name: wheel
+        path: dist/*.whl
+
+    #-- 6. when you push a tag, attach the wheel to a GH release
+    - name: (tag push) Publish release asset
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v2
+      with:
+        files: dist/*.whl
