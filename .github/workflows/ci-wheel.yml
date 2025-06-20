@@ -29,10 +29,16 @@ jobs:
     - name: Debug pyproject.toml and submodule
       shell: pwsh
       run: |
+        Write-Host "Root pyproject.toml:"
         cat pyproject.toml
-        if (Test-Path vendor/llama.cpp/pyproject.toml) { cat vendor/llama.cpp/pyproject.toml }
+        Write-Host "Checking vendor/llama.cpp/pyproject.toml:"
+        if (Test-Path vendor/llama.cpp/pyproject.toml) { cat vendor/llama.cpp/pyproject.toml } else { Write-Host "No pyproject.toml in vendor/llama.cpp" }
+        Write-Host "Submodule files:"
         ls vendor/llama.cpp
+        Write-Host "Submodule HEAD:"
         git -C vendor/llama.cpp log -1
+        Write-Host "Build directory before build:"
+        ls .
 
     - name: Build wheel
       shell: pwsh

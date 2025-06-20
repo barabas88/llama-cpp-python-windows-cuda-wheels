@@ -3,17 +3,16 @@ requires = ["scikit-build-core>=0.11"]
 build-backend = "scikit_build_core.build"
 
 [project]
-name            = "llama-cpp-python-windows-cuda"
-version         = "0.0.1"
-description     = "Pre-built Windows CUDA wheels for llama-cpp-python"
-authors         = [{ name = "Your Name" }]
-license         = { text = "MIT" }
-readme          = "README.md"
+name = "llama-cpp-python-windows-cuda"
+version = "0.0.1"
+description = "Pre-built Windows CUDA wheels for llama-cpp-python"
+authors = [{ name = "Your Name" }]
+license = { text = "MIT" }
+readme = "README.md"
 requires-python = ">=3.8"
 
 [tool.scikit-build]
 cmake.build-type = "Release"
-wheel.py-api     = "py3"
-
-[tool.scikit-build.wheel]
-packages = ["llama_cpp"]
+wheel.py-api = "py3"
+cmake.args = ["-DGGML_CUDA=ON", "-DCMAKE_CUDA_ARCHITECTURES=75;86;89", "-DLLAMA_CURL=OFF", "-DLLAVA_BUILD=OFF"]
+wheel.packages = ["llama_cpp"]

@@ -10,7 +10,9 @@ if (Test-Path build.env) {
 }
 
 # ────────────────────────────── 1.  Python venv & deps ──────────────
-if (-not (Test-Path .venv)) { py -3.12 -m venv .venv }
+# Replace the venv creation step
+Remove-Item -Recurse -Force .venv -ErrorAction SilentlyContinue
+py -3.12 -m venv .venv
 . .\.venv\Scripts\Activate.ps1
 python -m pip install -U pip ninja cmake scikit-build-core build
 
@@ -18,9 +20,19 @@ python -m pip install -U pip ninja cmake scikit-build-core build
 git submodule update --init --depth 1 --recursive
 git -C vendor/llama.cpp fetch --tags --depth 1
 $LLAMA_TAG = $env:LLAMA_TAG ?? 'b5709'
+Write-Host "Checking out submodule tag: $LLAMA_TAG"
 git -C vendor/llama.cpp checkout $LLAMA_TAG
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Failed to checkout $LLAMA_TAG, falling back to main"
+    git -C vendor/llama.cpp checkout main
+}
+Write-Host "Submodule HEAD:"
+git -C vendor/llama.cpp log -1
 if (Test-Path vendor/llama.cpp/pyproject.toml) {
+    Write-Host "Renaming vendor/llama.cpp/pyproject.toml to pyproject.toml.bak"
     Move-Item vendor/llama.cpp/pyproject.toml vendor/llama.cpp/pyproject.toml.bak
+} else {
+    Write-Host "No pyproject.toml found in vendor/llama.cpp"
 }
 
 # ────────────────────────────── 3.  Configure CUDA env ──────────────
