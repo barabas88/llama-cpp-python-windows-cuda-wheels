@@ -24,21 +24,21 @@ git -C vendor/llama.cpp checkout $LLAMA_TAG
 $env:CUDA_PATH = "$env:ProgramFiles\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
 $env:Path      = "$env:CUDA_PATH\bin;$env:Path"
 
-# ────────────────────────────── 4.  Generate build tree ─────────────
+# ─ 4. Generate build tree ─
 Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue
 
 $cmakeArgs = @(
     '-DGGML_CUDA=ON',
     '-DCMAKE_CUDA_ARCHITECTURES=75;86;89',
-    '-DLLAMA_CURL=OFF',        # <-- really applied this time
+    '-DLLAMA_CURL=OFF',
     '-DLLAVA_BUILD=OFF',
     '-DCMAKE_BUILD_TYPE=Release'
 )
 
-cmake -S vendor/llama.cpp -B build -G 'NMake Makefiles' @cmakeArgs
+cmake -S vendor/llama.cpp -B build -G Ninja @cmakeArgs   # ← changed
 
-# ────────────────────────────── 5.  Compile ─────────────────────────
-cmake --build build --config Release -- /m     # /m = parallel for NMake
+# ─ 5. Compile ─
+cmake --build build --config Release --parallel           # ← changed
 
 # ────────────────────────────── 6.  Stage extra exe ─────────────────
 New-Item -ItemType Directory -Path llama_cpp\lib -Force | Out-Null
