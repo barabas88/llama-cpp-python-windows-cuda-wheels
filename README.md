@@ -1,4 +1,4 @@
-# 🦙 llama-cpp-python-windows-cuda-wheels (for Windows x64 + CUDA 12.8)
+# 🦙 llama-cpp-python-windows-cuda-wheels (for Windows x64 + CUDA 12.4)
 
 Pre-built **Python wheels** of [`abetlen/llama-cpp-python`](https://github.com/abetlen/llama-cpp-python)  
 with:
@@ -27,9 +27,9 @@ After that:
 from llama_cpp import Llama
 llm = Llama(model_path="…/zephyr-7b-yarn.gguf", n_gpu_layers=-1)
 print(llm("Hello, world!", max_tokens=12))
-Building yourself (Windows 11, VS 2022 Community + CUDA 12.8)
+Building yourself (Windows 11, VS 2022 Community + CUDA 12.4)
 
-REM 0. prerequisites:  Visual Studio “Desktop C++”  +  CUDA 12.8
+REM 0. prerequisites:  Visual Studio “Desktop C++”  +  CUDA 12.4
 REM 1. open “x64 Native Tools Command Prompt for VS 2022”
 REM 2. clone + run:
 git clone --recursive https://github.com/<YOU>/llama-cpp-wheels
