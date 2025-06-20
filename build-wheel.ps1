@@ -4,7 +4,6 @@ $ErrorActionPreference = 'Stop'
   Set-Variable $name $val
 }
 
-& "$env:ProgramFiles\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" | Out-Null
 
 if (!(Test-Path .venv)) { py -3.12 -m venv .venv }
 . .venv\Scripts\activate.ps1

@@ -12,6 +12,9 @@ jobs:
       - uses: actions/checkout@v4
         with: { submodules: 'true', fetch-depth: 0 }
 
+      - name: Enable MSVC build environment
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Build
         shell: pwsh
         run: ./build-wheel.ps1
