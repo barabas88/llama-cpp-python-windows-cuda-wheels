@@ -15,7 +15,7 @@ jobs:
     # 1)  clone + get sub-modules (vendor/llama.cpp) in one go
     - uses: actions/checkout@v4
       with:
-        submodules: 'recursive'   # ← **THIS** pulls vendor/llama.cpp
+        submodules: 'false'   # ← **THIS** pulls vendor/llama.cpp
         fetch-depth: 1            # shallow, faster
 
     # 2)  set up MSVC “x64 Native Tools” env
