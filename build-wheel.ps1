@@ -17,16 +17,17 @@ python -m pip install -U pip ninja cmake scikit-build-core build
 # ────────────────────────────── 2.  Update/checkout submodule ───────
 git submodule update --init --depth 1 --recursive
 git -C vendor/llama.cpp fetch --tags --depth 1
-$LLAMA_TAG = $env:LLAMA_TAG ?? 'b5709'      # default if not set
+$LLAMA_TAG = $env:LLAMA_TAG ?? 'b5709'
 git -C vendor/llama.cpp checkout $LLAMA_TAG
+if (Test-Path vendor/llama.cpp/pyproject.toml) {
+    Move-Item vendor/llama.cpp/pyproject.toml vendor/llama.cpp/pyproject.toml.bak
+}
 
 # ────────────────────────────── 3.  Configure CUDA env ──────────────
 $env:CUDA_PATH = "$env:ProgramFiles\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
 $env:Path      = "$env:CUDA_PATH\bin;$env:Path"
 
-# ─ 4. Generate build tree ─
-Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue
-
+# ────────────────────────────── 4.  Build wheel ─────────────────────
 $env:CMAKE_ARGS = @(
     "-DGGML_CUDA=ON",
     "-DCMAKE_CUDA_ARCHITECTURES=75;86;89",
@@ -34,6 +35,6 @@ $env:CMAKE_ARGS = @(
     "-DLLAVA_BUILD=OFF"
 ) -join ' '
 
-# ────────────────────────────── 5.  Build wheel ─────────────────────
+Remove-Item -Recurse -Force build,dist -ErrorAction SilentlyContinue
 python -m build -w --no-isolation
 Write-Host '==== DONE, wheel in dist\ ===='
