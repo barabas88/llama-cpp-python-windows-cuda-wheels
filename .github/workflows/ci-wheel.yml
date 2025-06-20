@@ -28,10 +28,10 @@ jobs:
         arch: x64
 
     #-- 3. CUDA toolkit (headers + nvcc only)
-    - name: Install CUDA 12.8 tool-kit
+    - name: Install CUDA 12.4 tool-kit
       uses: Jimver/cuda-toolkit@v0.2.16
       with:
-        cuda: '12.8.0'
+        cuda: '12.4.1'
 
     #-- 4. build the wheel inside build-wheel.ps1
     - name: Build wheel
