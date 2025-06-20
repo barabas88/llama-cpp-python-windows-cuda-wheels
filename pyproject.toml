@@ -14,3 +14,4 @@ requires-python = ">=3.8"
 [tool.scikit-build]
 wheel.py-api = "py3"
 cmake.build-type = "Release"
+packages = ["llama_cpp"]

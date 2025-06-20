@@ -27,23 +27,13 @@ $env:Path      = "$env:CUDA_PATH\bin;$env:Path"
 # ─ 4. Generate build tree ─
 Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue
 
-$cmakeArgs = @(
-    '-DGGML_CUDA=ON',
-    '-DCMAKE_CUDA_ARCHITECTURES=75;86;89',
-    '-DLLAMA_CURL=OFF',
-    '-DLLAVA_BUILD=OFF',
-    '-DCMAKE_BUILD_TYPE=Release'
-)
+$env:CMAKE_ARGS = @(
+    "-DGGML_CUDA=ON",
+    "-DCMAKE_CUDA_ARCHITECTURES=75;86;89",
+    "-DLLAMA_CURL=OFF",
+    "-DLLAVA_BUILD=OFF"
+) -join ' '
 
-cmake -S vendor/llama.cpp -B build -G Ninja @cmakeArgs   # ← changed
-
-# ─ 5. Compile ─
-cmake --build build --config Release --parallel           # ← changed
-
-# ────────────────────────────── 6.  Stage extra exe ─────────────────
-New-Item -ItemType Directory -Path llama_cpp\lib -Force | Out-Null
-Copy-Item build\bin\llama-mtmd-cli.exe llama_cpp\lib\ -Force
-
-# ────────────────────────────── 7.  Build wheel ─────────────────────
+# ────────────────────────────── 5.  Build wheel ─────────────────────
 python -m build -w --no-isolation
 Write-Host '==== DONE, wheel in dist\ ===='
