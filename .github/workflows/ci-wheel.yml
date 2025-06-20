@@ -1,41 +1,49 @@
-name: Build-wheel
+name: Build CUDA wheel
 
 on:
-  push:            { branches: ["main"] }
-  pull_request:    {}
-  workflow_dispatch:
+  push:           # any push to main
+    branches: [ "main" ]
+  pull_request:   # PRs against main
+  workflow_dispatch:   # manual “Run workflow” button
 
 jobs:
   wheel:
-    runs-on: windows-2022          # free on public repos
+    runs-on: windows-2022         # runner with VS 2022 pre-installed
 
     steps:
-    # ── clone *only* the main repo (faster) ───────────────────────────────
+    # ───────────────────────────────────────────────────────────────
+    # 1)  clone + get sub-modules (vendor/llama.cpp) in one go
     - uses: actions/checkout@v4
       with:
-        submodules: false          # we’ll do it ourselves
-        fetch-depth: 1
+        submodules: 'recursive'   # ← **THIS** pulls vendor/llama.cpp
+        fetch-depth: 1            # shallow, faster
 
-    # ── MSVC environment ──────────────────────────────────────────────────
-    - uses: ilammy/msvc-dev-cmd@v1
-      with: { arch: x64 }
+    # 2)  set up MSVC “x64 Native Tools” env
+    - name: Enable MSVC build environment
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
-    # ── CUDA headers + nvcc (no GPU required) ────────────────────────────
-    - name: Install CUDA 12.4
+    # 3)  header-only CUDA toolkit (nvcc, headers, stubs) – no GPU needed
+    - name: Install CUDA 12.4 tool-chain
       uses: Jimver/cuda-toolkit@v0.2.16
-      with: { cuda: "12.4.1" }      # latest tag the action knows
+      with:
+        cuda: '12.4.1'            # last point-release available
 
-    # ── build the wheel ──────────────────────────────────────────────────
+    # 4)  run our PowerShell build script
     - name: Build wheel
       shell: pwsh
       run: ./build-wheel.ps1
 
-    # ── upload artefact ──────────────────────────────────────────────────
+    # 5)  always keep the wheel as an artifact
     - uses: actions/upload-artifact@v4
-      with: { name: wheel, path: dist/*.whl }
+      with:
+        name: wheel
+        path: dist/*.whl
 
-    # optional: attach wheel when you push a git **tag**
-    - name: Attach to release
+    # 6)  when the push is a git *tag* – publish as a GitHub Release asset
+    - name: (tag push) Publish release asset
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v2
-      with: { files: dist/*.whl }
+      with:
+        files: dist/*.whl
