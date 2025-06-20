@@ -1,15 +1,8 @@
-# pyproject.toml  – fixed
 [build-system]
 requires = ["scikit-build-core>=0.11"]
 build-backend = "scikit_build_core.build"
 
 [project]
-name            = "llama-cpp-python-windows-cuda"
-version         = "0.0.1"
-description     = "Pre-built Windows CUDA wheels for llama-cpp-python"
-authors         = [{ name = "Your Name" }]
-license         = { text = "MIT" }
-readme          = "README.md"
 name            = "llama-cpp-python-windows-cuda"
 version         = "0.0.1"
 description     = "Pre-built Windows CUDA wheels for llama-cpp-python"
